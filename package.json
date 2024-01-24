@@ -11,6 +11,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
+    "@trpc/server": "^10.45.0",
     "zod": "^3.22.4"
   }
 }

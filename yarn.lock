@@ -209,6 +209,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@trpc/server@npm:^10.45.0":
+  version: 10.45.0
+  resolution: "@trpc/server@npm:10.45.0"
+  checksum: 48a1c8337853639919d2696321cf87d76eaa6273fc7987022b9f12ced3c688af81a2a065f2dbf93f9e51ac593be8858cc165fa147a3a556956b419d0284e043a
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:^20.10.7":
   version: 20.10.7
   resolution: "@types/node@npm:20.10.7"
@@ -856,6 +863,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "open-api-trpc-client@workspace:."
   dependencies:
+    "@trpc/server": ^10.45.0
     "@types/node": ^20.10.7
     openapi3-ts: ^4.2.1
     tsx: ^4.7.0

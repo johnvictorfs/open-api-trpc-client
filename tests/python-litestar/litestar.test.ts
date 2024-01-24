@@ -111,6 +111,7 @@ test('can get api docs', async () => {
 test('can get zodSchemas from OpenAPI schemas', async () => {
   const apiDocs = await getApiDocs()
 
+  debugger
   const schemas = apiDocs.components?.schemas
 
   if (!schemas) {
