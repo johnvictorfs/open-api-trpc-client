@@ -54,4 +54,23 @@ async def create_user(data: User) -> User:
     return data
 
 
-app = Litestar(route_handlers=[get_user, get_user_profile, create_user])
+class SearchBody(TypedDict):
+    name: str
+    age: int
+
+
+from typing import Literal
+
+
+@post("/users/search/{user_type: str}/submit")
+async def search_users(
+    data: SearchBody, user_type: str, sort_by: Literal["name", "email"], order: str
+) -> User:
+    print(data)
+    print(user_type)
+    print(sort_by)
+    print(order)
+    return users[0]
+
+
+app = Litestar(route_handlers=[get_user, get_user_profile, create_user, search_users])

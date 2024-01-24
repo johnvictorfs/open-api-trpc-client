@@ -65,23 +65,48 @@ type DecoratedProcedureRecord<TProcedures extends ProcedureRouterRecord> = {
   : never;
 };
 
+// class SearchBody(TypedDict):
+//     name: str
+//     age: int
+
+
+// @post("/search/users/{user_type: str}")
+// async def search_users(
+//     data: SearchBody, user_type: str, sort_by: str, order: str
+// ) -> User:
+//     return users[0]
+
+export type ProcedureInputs<TData, TQueryParams> = {
+  data: TData,
+  query?: TQueryParams,
+}
+
 type FakePythonApiRouter = CreateRouterInner<FakeConfig, {
   users: CreateRouterInner<FakeConfig, {
-    post: MutationProcedure<{ id: number, username: string, email: string, level: number }, { id: number, username: string, email: string, level: number, profile: { name: string, age: number } }>
-    user_id: CreateRouterInner<FakeConfig, {
-      get: QueryProcedure<{ user_id: number }, { id: number, username: string, email: string, level: number, profile: { name: string, age: number } }>
-    }>
-    profile: CreateRouterInner<FakeConfig, {
-      user_id: CreateRouterInner<FakeConfig, {
-        get: QueryProcedure<{ user_id: number }, { name: string, age: number }>
+    search: CreateRouterInner<FakeConfig, {
+      [key: string]: CreateRouterInner<FakeConfig, {
+        submit: CreateRouterInner<FakeConfig, {
+          post: MutationProcedure<
+            ProcedureInputs<{ name: string, age: number }, { sort_by?: 'name' | 'email', order?: string }>,
+            { id: number, username: string, email: string, level: number }
+          >
+        }>
       }>
     }>,
+    // post: MutationProcedure<{ id: number, username: string, email: string, level: number }, { id: number, username: string, email: string, level: number, profile: { name: string, age: number } }>
+    // user_id: CreateRouterInner<FakeConfig, {
+    //   get: QueryProcedure<{ user_id: number }, { id: number, username: string, email: string, level: number, profile: { name: string, age: number } }>
+    // }>
+    // profile: CreateRouterInner<FakeConfig, {
+    //   user_id: CreateRouterInner<FakeConfig, {
+    //     get: QueryProcedure<{ user_id: number }, { name: string, age: number }>
+    //   }>
+    // }>,
   }>,
 }>
 
 export const createOpenApiClient = <TRouter extends AnyRouter>(
   baseUrl: string,
-  schema: OpenAPIObject
 ) =>
   createRecursiveProxy(async (opts) => {
     const path = [...opts.path]; // e.g. ["post", "byId", "get", "query"]
@@ -91,47 +116,14 @@ export const createOpenApiClient = <TRouter extends AnyRouter>(
     const slashPath = path.join('/'); // "post.byId" - this is the path procedures have on the backend
     let uri = `${baseUrl}/${slashPath}`;
 
-    if (!schema.paths) {
-      throw new Error('No paths in schema');
-    }
+    const [input] = opts.args;
 
-    const queryParameters: { key: string, value: any }[] = []
+    const queryParameters: { key: string, value: any }[] = input.query ? Object.entries(input.query).map(([key, value]) => ({ key, value })) : []
 
-    for (const [path, properties] of Object.entries(schema.paths)) {
-      const pathWithoutBraces = path.replace(/{/g, '').replace(/}/g, '')
+    console.log(`opts.args`, opts.args)
 
-      if (pathWithoutBraces === `/${slashPath}`) {
-        uri = `${baseUrl}${path}`;
-
-        const allParameters: ParameterObject[] = Object.values(properties).flatMap((property) => {
-          if ('parameters' in property) {
-            return property.parameters
-          } else {
-            return []
-          }
-        })
-
-        allParameters.forEach((parameter) => {
-          if ('in' in parameter) {
-            const argParameter = opts.args.find((arg) => {
-              if (arg && typeof arg === 'object') {
-                return Object.keys(arg).includes(parameter.name)
-              }
-            })
-
-            const parameterValue = (argParameter && argParameter[parameter.name as keyof typeof argParameter]) as string
-
-            if (parameter.in === 'path') {
-              // url parameters (e.g. /users/{user_id} -> /users/1)
-              uri = uri.replace(`{${parameter.name}}`, parameterValue.toString())
-            } else if (parameter.in === 'query') {
-              // query parameters (e.g. /users?user_id=1)
-              queryParameters.push({ key: parameter.name, value: parameterValue })
-            }
-          }
-        })
-      }
-    }
+    console.log(`slashPath`, slashPath)
+    console.log(`uri`, uri)
 
     queryParameters.forEach((queryParameter, index) => {
       if (index === 0) {
@@ -141,10 +133,8 @@ export const createOpenApiClient = <TRouter extends AnyRouter>(
       }
     })
 
-    const [input] = opts.args;
-    const stringifiedInput = input !== undefined && JSON.stringify(input);
+    const stringifiedInput = input !== undefined && !!input?.data && JSON.stringify(input.data);
     let body = restMethod === 'get' ? undefined : (stringifiedInput || undefined);
-    console.log(`body`, body)
 
     const json = await fetch(uri, {
       method: restMethod,
@@ -168,21 +158,42 @@ const getApiDocs = async () => {
 
 const testStuff = async () => {
   const schema = await getApiDocs()
-  const litestarClient = createOpenApiClient<FakePythonApiRouter>('http://127.0.0.1:8000', schema);
+  const litestarClient = createOpenApiClient<FakePythonApiRouter>('http://127.0.0.1:8000');
 
-  litestarClient.users.user_id.get.query({ user_id: 99 }).then((data) => {
-    console.log(data.profile.age)
-  })
+  /**
+   * POST /users/search/admin/submit?sort_by=id&order=asc HTTP/1.1
+   * 
+   * {
+   *   username: 'asd',
+   *   email: 'asd@asd.com'
+   * }
+   */
+  const userType = 'admin'
 
-  litestarClient.users.post.mutate({
-    email: 'email@email.com',
-    level: 2,
-    id: 1,
-    username: 'asd'
-  }).then((data) => {
-    console.log(data)
-    console.log(`created ${JSON.stringify(data)}`)
-  })
+  litestarClient.users.search[userType].submit.post.mutate({
+    query: {
+      sort_by: 'email',
+      order: 'asc',
+    },
+    data: {
+      age: 12,
+      name: 'asdasd'
+    }
+  }) 
+
+  // litestarClient.users.user_id.get.query({ user_id: 99 }).then((data) => {
+  //   console.log(data.profile.age)
+  // })
+
+  // litestarClient.users.post.mutate({
+  //   email: 'email@email.com',
+  //   level: 2,
+  //   id: 1,
+  //   username: 'asd'
+  // }).then((data) => {
+  //   console.log(data)
+  //   console.log(`created ${JSON.stringify(data)}`)
+  // })
 }
 
 testStuff()
