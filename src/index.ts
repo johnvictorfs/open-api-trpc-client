@@ -116,7 +116,7 @@ export const createOpenApiClient = <TRouter extends AnyRouter>(
     const slashPath = path.join('/'); // "post.byId" - this is the path procedures have on the backend
     let uri = `${baseUrl}/${slashPath}`;
 
-    const [input] = opts.args;
+    const [input] = opts.args as [ProcedureInputs<any, any>]
 
     const queryParameters: { key: string, value: any }[] = input.query ? Object.entries(input.query).map(([key, value]) => ({ key, value })) : []
 
