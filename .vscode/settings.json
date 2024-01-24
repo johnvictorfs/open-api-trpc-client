@@ -1,0 +1,13 @@
+{
+  "ruff.enable": true,
+  "ruff.fixAll": true,
+  "[python]": {
+    "editor.codeActionsOnSave": {
+      "source.fixAll": true,
+    },
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "typescript.preferences.preferTypeOnlyAutoImports": true,
+  "typescript.tsdk": ".yarn/sdks/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
+}
