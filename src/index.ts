@@ -65,7 +65,7 @@ const appRouter = router({
     }),
 });
 
-type FakeProcedure<TInput, TOutput> = BuildProcedure<'query', {
+type ProcedureParams<TInput> = {
   _config: RootConfig<{
     ctx: object
     meta: object
@@ -78,26 +78,16 @@ type FakeProcedure<TInput, TOutput> = BuildProcedure<'query', {
   _input_in: TInput
   _input_out: unknown
   _output_in: unknown
-}, TOutput>
+}
+
+type QueryProcedure<TInput, TOutput> = BuildProcedure<'query', ProcedureParams<TInput>, TOutput>
+type MutationProcedure<TInput, TOutput> = BuildProcedure<'mutation', ProcedureParams<TInput>, TOutput>
 
 export type FakeConfig = RootConfig<{
   ctx: object;
   meta: object;
   errorShape: DefaultErrorShape;
   transformer: DefaultDataTransformer;
-}>
-
-type FakeAppRouter = CreateRouterInner<FakeConfig, {
-  byId: FakeProcedure<
-    { id: string },
-    { user: { id: string, name: string, age: number } }
-  >
-  users: CreateRouterInner<FakeConfig, {
-    allUsers: FakeProcedure<
-      void,
-      { users: { id: string, name: string }[] }
-    >
-  }>,
 }>
 
 type Resolver<TProcedure extends AnyProcedure> = (
@@ -125,19 +115,19 @@ type DecoratedProcedureRecord<TProcedures extends ProcedureRouterRecord> = {
 
 type FakePythonApiRouter = CreateRouterInner<FakeConfig, {
   users: CreateRouterInner<FakeConfig, {
-    post: FakeProcedure<{ id: number, username: string, email: string, level: number }, { id: number, username: string, email: string, level: number, profile: { name: string, age: number } }>
+    post: MutationProcedure<{ id: number, username: string, email: string, level: number }, { id: number, username: string, email: string, level: number, profile: { name: string, age: number } }>
     user_id: CreateRouterInner<FakeConfig, {
-      get: FakeProcedure<{ user_id: number }, { id: number, username: string, email: string, level: number, profile: { name: string, age: number } }>
+      get: QueryProcedure<{ user_id: number }, { id: number, username: string, email: string, level: number, profile: { name: string, age: number } }>
     }>
     profile: CreateRouterInner<FakeConfig, {
       user_id: CreateRouterInner<FakeConfig, {
-        get: FakeProcedure<{ user_id: number }, { name: string, age: number }>
+        get: QueryProcedure<{ user_id: number }, { name: string, age: number }>
       }>
     }>,
   }>,
 }>
 
-export const createTinyRPCClient = <TRouter extends AnyRouter>(
+export const createOpenApiClient = <TRouter extends AnyRouter>(
   baseUrl: string,
   schema: OpenAPIObject
 ) =>
@@ -215,7 +205,7 @@ export const createTinyRPCClient = <TRouter extends AnyRouter>(
     if ('error' in json) {
       throw new Error(`Error: ${json.error.message}`);
     }
-    // No error - all good. Return the data.
+
     return json;
   }) as DecoratedProcedureRecord<TRouter['_def']['record']>;
 
@@ -226,13 +216,13 @@ const getApiDocs = async () => {
 
 const testStuff = async () => {
   const schema = await getApiDocs()
-  const litestarClient = createTinyRPCClient<FakePythonApiRouter>('http://127.0.0.1:8000', schema);
+  const litestarClient = createOpenApiClient<FakePythonApiRouter>('http://127.0.0.1:8000', schema);
 
   litestarClient.users.user_id.get.query({ user_id: 99 }).then((data) => {
     console.log(data.profile.age)
   })
 
-  litestarClient.users.post.query({
+  litestarClient.users.post.mutate({
     email: 'email@email.com',
     level: 2,
     id: 1,
