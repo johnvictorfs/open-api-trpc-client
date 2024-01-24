@@ -4,8 +4,6 @@ import {
   type AnyProcedure,
   type inferProcedureInput,
   type inferProcedureOutput,
-  initTRPC,
-  TRPCError,
   DefaultErrorShape,
   DefaultDataTransformer,
   RootConfig,
@@ -18,52 +16,6 @@ import {
 import { TRPCResponse } from '@trpc/server/rpc';
 import { createRecursiveProxy } from '@trpc/server/shared';
 import { type OpenAPIObject, type ParameterObject } from 'openapi3-ts/oas31';
-
-import z from 'zod';
-
-const t = initTRPC.create({});
-
-const router = t.router;
-const publicProcedure = t.procedure;
-
-const posts = [
-  {
-    id: '1',
-    title: 'Hello World',
-  },
-];
-const appRouter = router({
-  posts: router({
-    listPosts: publicProcedure.query(() => posts),
-  }),
-  addPost: publicProcedure
-    .input(
-      z.object({
-        title: z.string(),
-      }),
-    )
-    .mutation((opts) => {
-      const id = Math.random().toString();
-      posts.push({
-        id,
-        title: opts.input.title,
-      });
-      return {
-        id,
-      };
-    }),
-  byId: publicProcedure
-    .input(
-      z.object({
-        id: z.string(),
-      }),
-    )
-    .query((opts) => {
-      const post = posts.find((p) => p.id === opts.input.id);
-      if (!post) throw new TRPCError({ code: 'NOT_FOUND' });
-      return post;
-    }),
-});
 
 type ProcedureParams<TInput> = {
   _config: RootConfig<{
