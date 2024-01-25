@@ -1,4 +1,4 @@
-import { ApiRouter } from "generated/api-client";
+import { ApiRouter } from "tests/python-litestar/generated/api-client";
 import { createOpenApiClient } from "./client";
 
 const testStuff = async () => {

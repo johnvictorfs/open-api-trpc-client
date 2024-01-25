@@ -17,6 +17,6 @@
     ],
     "baseUrl": "."
   },
-  "include": ["src", "tests/**/*", "generated/*.d.ts"],
+  "include": ["src", "tests/**/*", "tests/python-litestar/generated/*.d.ts"],
   "exclude": ["node_modules", "dist"]
 }

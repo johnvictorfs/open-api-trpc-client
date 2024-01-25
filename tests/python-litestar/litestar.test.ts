@@ -2,7 +2,7 @@ import assert from 'assert';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import { before, after, test } from 'node:test'
 
-import { ApiRouter } from "generated/api-client";
+import { ApiRouter } from "./generated/api-client";
 import { createOpenApiClient } from "src/client";
 
 const executeLiteStarApi = async (): Promise<ChildProcessWithoutNullStreams> => {
