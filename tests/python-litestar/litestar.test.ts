@@ -4,6 +4,8 @@ import { assert, beforeAll, afterAll, test } from 'vitest'
 import type { ApiRouter, User } from "./generated/api-client";
 import { createOpenApiClient } from "src/client";
 
+import { inferRouterOutputs, inferRouterInputs } from '@trpc/server'
+
 type LiteStarError = {
   status_code: number
   detail: string
@@ -93,5 +95,39 @@ test('can use types from generated typings', async () => {
   const _wrongUser: User = {
     // @ts-expect-error
     id: 'asd'
+  }
+})
+
+test('can use tRPC type inference helpers in generated router', async () => {
+  type TestInputType = inferRouterInputs<ApiRouter>['users']['post']
+  const _testUser: TestInputType = {
+    data: {
+      email: 'test',
+      username: 'test',
+      level: 1,
+      id: 0,
+    }
+  }
+
+  const _wrongTestUser: TestInputType = {
+    // @ts-expect-error
+    data: {
+      username: 'test',
+      level: 1,
+      id: 0,
+    }
+  }
+
+  type TestOutputType = inferRouterOutputs<ApiRouter>['users']['post']['profile']
+
+  const _testProfile: TestOutputType = {
+    age: 123,
+    name: 'asd'
+  }
+
+  const _wrongTestProfile: TestOutputType = {
+    // @ts-expect-error
+    age: 'asd',
+    name: 'asd'
   }
 })

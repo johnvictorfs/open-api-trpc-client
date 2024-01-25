@@ -81,7 +81,7 @@ export const createOpenApiClient = <TRouter extends AnyRouter, TError = unknown>
 
       try {
         errorData = await response.json()
-      } catch (_err) {}
+      } catch (_err) { }
 
       return {
         response,
