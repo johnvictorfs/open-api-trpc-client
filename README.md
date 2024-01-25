@@ -24,3 +24,30 @@ if (user) {
   console.log(user.age)
 }
 ```
+
+```ts
+import { createOpenApiClient } from 'open-api-trpc-client';
+import type { ApiRouter } from "./generated/api-client";
+
+// errors example
+type LiteStarError = {
+  status_code: number
+  detail: string
+  extra?: {
+    message: string
+    key: string
+    source: string
+  }[]
+}
+
+const litestarClient = createOpenApiClient<ApiRouter, LiteStarError>('http://127.0.0.1:8000')
+const userId = '99'
+
+const { data: user, error, response } = await litestarClient.users.profile[userId].get.query()
+
+if (error) {
+  // error is typed as LiteStarError
+  console.error(error.detail)
+  console.error(`status code: ${response.status}`)
+}
+```

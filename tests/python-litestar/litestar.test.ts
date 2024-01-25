@@ -1,8 +1,18 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
-import { assert, beforeAll, afterAll, test, expect } from 'vitest'
+import { assert, beforeAll, afterAll, test } from 'vitest'
 
 import type { ApiRouter } from "./generated/api-client";
 import { createOpenApiClient } from "src/client";
+
+type LiteStarError = {
+  status_code: number
+  detail: string
+  extra?: {
+    message: string
+    key: string
+    source: string
+  }[]
+}
 
 const executeLiteStarApi = async (): Promise<ChildProcessWithoutNullStreams> => {
   const process = spawn('poetry', ['run', 'python', '-m', 'litestar', 'run', '--port', '8000'], {
@@ -42,7 +52,7 @@ test('can call API with generated client', async () => {
 })
 
 test('type errors where expected', async () => {
-  const litestarClient = createOpenApiClient<ApiRouter>('http://127.0.0.1:8000')
+  const litestarClient = createOpenApiClient<ApiRouter, LiteStarError>('http://127.0.0.1:8000')
 
   const { error, response } = await litestarClient.users.post.mutate({
     data: {
@@ -51,17 +61,7 @@ test('type errors where expected', async () => {
     }
   })
 
-  type LiteStarError = {
-    status_code: number
-    detail: string
-    extra?: {
-      message: string
-      key: string
-      source: string
-    }[]
-  }
-
-  assert((error as LiteStarError).detail.includes('Validation failed'))
+  assert(error?.detail.includes('Validation failed'))
   assert(response.status === 400)
 })
 
