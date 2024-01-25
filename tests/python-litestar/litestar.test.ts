@@ -1,5 +1,5 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
-import { assert, beforeAll, afterAll, test } from 'vitest'
+import { assert, beforeAll, afterAll, test, expect } from 'vitest'
 
 import type { ApiRouter } from "./generated/api-client";
 import { createOpenApiClient } from "src/client";
@@ -12,13 +12,13 @@ const executeLiteStarApi = async (): Promise<ChildProcessWithoutNullStreams> => 
   // Wait for API to start
   return await new Promise((resolve) => {
     process.stderr.on('data', (data) => {
-      console.log(data.toString())
+      console.debug(data.toString())
       if (data.toString().includes('Uvicorn running')) {
         resolve(process)
       }
     })
 
-    process.stdout.on('data', (data) => console.log(data.toString()))
+    process.stdout.on('data', (data) => console.debug(data.toString()))
   })
 }
 
@@ -37,24 +37,38 @@ afterAll(() => {
 test('can call API with generated client', async () => {
   const litestarClient = createOpenApiClient<ApiRouter>('http://127.0.0.1:8000')
   const userId = '99'
-  const data = await litestarClient.users.profile[userId].get.query()
+  const { data } = await litestarClient.users.profile[userId].get.query()
   assert(data?.age === 22)
 })
 
 test('type errors where expected', async () => {
   const litestarClient = createOpenApiClient<ApiRouter>('http://127.0.0.1:8000')
-  await litestarClient.users.post.mutate({
+
+  const { error, response } = await litestarClient.users.post.mutate({
     data: {
       // @ts-expect-error
       email: 123
     }
   })
+
+  type LiteStarError = {
+    status_code: number
+    detail: string
+    extra?: {
+      message: string
+      key: string
+      source: string
+    }[]
+  }
+
+  assert((error as LiteStarError).detail.includes('Validation failed'))
+  assert(response.status === 400)
 })
 
 test('can pass query params', async () => {
   const litestarClient = createOpenApiClient<ApiRouter>('http://127.0.0.1:8000')
   const userType = 'admin'
-  const response = await litestarClient.users.search[userType].submit.post.mutate({
+  const { data } = await litestarClient.users.search[userType].submit.post.mutate({
     data: {
       name: 'foo',
       age: 12
@@ -65,5 +79,5 @@ test('can pass query params', async () => {
     }
   })
 
-  assert(response?.username === 'foo')
+  assert(data?.username === 'foo')
 })

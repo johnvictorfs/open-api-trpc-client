@@ -2,9 +2,19 @@ import { createRecursiveProxy } from '@trpc/server/shared';
 import type { TRPCResponse } from '@trpc/server/rpc';
 import type { AnyMutationProcedure, AnyProcedure, AnyQueryProcedure, AnyRouter, ProcedureRouterRecord, inferProcedureInput, inferProcedureOutput } from '@trpc/server';
 
+type ProcedureOutput<TProcedure> = {
+  response: Response
+} & ({
+  data: inferProcedureOutput<TProcedure>
+  error: null
+} | {
+  data: null
+  error: unknown
+})
+
 type Resolver<TProcedure extends AnyProcedure> = (
   input: inferProcedureInput<TProcedure>
-) => Promise<inferProcedureOutput<TProcedure>>;
+) => Promise<ProcedureOutput<TProcedure>>;
 
 type DecorateProcedure<TProcedure extends AnyProcedure> =
   TProcedure extends AnyQueryProcedure
@@ -52,17 +62,31 @@ export const createOpenApiClient = <TRouter extends AnyRouter>(
     const stringifiedInput = input !== undefined && !!input?.data && JSON.stringify(input.data);
     let body = restMethod === 'get' ? undefined : (stringifiedInput || undefined);
 
-    const json = await fetch(uri, {
+    const response = await fetch(uri, {
       method: restMethod,
       headers: {
         'Content-Type': 'application/json',
       },
       body,
-    }).then((res) => res.json() as Promise<TRPCResponse>);
+    })
 
-    if (json && 'error' in json) {
-      throw new Error(`Error: ${json.error.message}`);
+    if (response.ok) {
+      return {
+        response,
+        data: await response.json() as Promise<TRPCResponse>,
+        error: null,
+      }
+    } else {
+      let errorData;
+
+      try {
+        errorData = await response.json()
+      } catch (_err) {}
+
+      return {
+        response,
+        data: null,
+        error: errorData
+      }
     }
-
-    return json;
   }) as DecoratedProcedureRecord<TRouter['_def']['record']>;

@@ -14,7 +14,11 @@ const userId = '99'
 
 // here do be some auto-completion and type-checking
 // translates to `GET /users/profile/:userId`
-const user = await litestarClient.users.profile[userId].get.query()
+const { data: user, error } = await litestarClient.users.profile[userId].get.query()
+
+if (error) {
+  console.error(error)
+}
 
 if (user) {
   console.log(user.age)

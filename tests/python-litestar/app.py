@@ -67,7 +67,6 @@ async def search_users(
     sort_by: Literal["name", "email"] | None,
     order: str | None,
 ) -> User | None:
-    print(sort_by)
     assert user_type == "admin"
     assert sort_by is not None
 
@@ -85,10 +84,6 @@ async def do_search_thing(
     sort_by: Literal["name", "email"] | None,
     order: str | None,
 ) -> User:
-    print(data)
-    print(user_type)
-    print(sort_by)
-    print(order)
     return users[0]
 
 
