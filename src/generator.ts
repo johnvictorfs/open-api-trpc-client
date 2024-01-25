@@ -160,9 +160,7 @@ const getTypeOfObjectSchema = (
     if (reference.startsWith('#/components/schemas/')) {
       const referenceName = reference.slice('#/components/schemas/'.length)
 
-      if (apiSchema.components?.schemas && referenceName in apiSchema.components?.schemas) {
-        return getTypeOfObjectSchema(apiSchema.components?.schemas[referenceName], apiSchema)
-      }
+      return referenceName
     }
   }
 
@@ -190,6 +188,18 @@ const getTypeDefinition = async (schema: OpenAPIObject) => {
   })
 
   let typeDefinition = `export type ApiRouter = CreateRouterInner<FakeConfig, {\n`
+
+  // { 'User': '{ name: string, age: number }' }
+  const referenceDefinitions: Record<string, string> = {}
+
+  Object.entries(schema?.components?.schemas || {}).forEach(([key, value]) => {
+    referenceDefinitions[key] = getTypeOfObjectSchema(value, schema)
+  })
+
+  // export type User = { name: string, age: number }
+  const referenceDefinitionsTypes = Object.entries(referenceDefinitions).map(([key, value]) => {
+    return `export type ${key} = ${value}`
+  }).join('\n\n')
 
   paths.forEach(([path, methods], pathIndex) => {
     // Example: ['users', 'search', '{user_type}', 'submit']
@@ -303,7 +313,7 @@ const getTypeDefinition = async (schema: OpenAPIObject) => {
 
   typeDefinition += `}>`
 
-  return prettier.format(`${FILE_HEADER}\n${typeDefinition}\n`, {
+  return prettier.format(`${FILE_HEADER}\n${referenceDefinitionsTypes}\n${typeDefinition}\n`, {
     parser: 'typescript'
   })
 }
