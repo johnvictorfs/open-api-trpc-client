@@ -5,7 +5,7 @@ import type { ApiRouter } from "./generated/api-client";
 import { createOpenApiClient } from "src/client";
 
 const executeLiteStarApi = async (): Promise<ChildProcessWithoutNullStreams> => {
-  const process = spawn('poetry', ['run', 'litestar', 'run', '--port', '8000'], {
+  const process = spawn('poetry', ['run', 'python', '-m', 'litestar', 'run', '--port', '8000'], {
     cwd: 'tests/python-litestar',
   })
 
