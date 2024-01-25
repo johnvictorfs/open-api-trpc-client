@@ -1,5 +1,6 @@
 from litestar import Litestar, get, post
 from typing import TypedDict, NotRequired
+from typing import Literal
 
 
 class Profile(TypedDict):
@@ -59,12 +60,12 @@ class SearchBody(TypedDict):
     age: int
 
 
-from typing import Literal
-
-
 @post("/users/search/{user_type: str}/submit")
 async def search_users(
-    data: SearchBody, user_type: str, sort_by: Literal["name", "email"], order: str
+    data: SearchBody,
+    user_type: str,
+    sort_by: Literal["name", "email"] | None,
+    order: str | None,
 ) -> User:
     print(data)
     print(user_type)
