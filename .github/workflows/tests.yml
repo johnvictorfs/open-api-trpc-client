@@ -56,5 +56,8 @@ jobs:
       - name: Generate API Schema
         run: yarn generate:starlite
 
+      - name: Type-check
+        run: yarn type-check
+
       - name: Run tests
         run: yarn test

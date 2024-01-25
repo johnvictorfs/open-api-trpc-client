@@ -2,6 +2,7 @@
   "name": "open-api-trpc-client",
   "packageManager": "yarn@3.6.2",
   "scripts": {
+    "type-check": "tsc --noEmit",
     "test": "vite-node tests/**/*.test.ts",
     "test:watch": "vite-node -w tests/**/*.test.ts",
     "generate:watch": "vite-node -w src/cli.ts types --watch --",
