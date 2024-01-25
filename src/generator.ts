@@ -212,7 +212,7 @@ const getTypeDefinition = async (schema: OpenAPIObject) => {
           }
         }
 
-        pathTypeDefinition += `${' '.repeat((index + 1) * 2)}${pathIdentifier} CreateRouterInner<FakeConfig, {\n`
+        pathTypeDefinition += `${pathIdentifier} CreateRouterInner<FakeConfig, {\n`
       })
 
       const procedure = method === 'get' || method === 'head' || method === 'options' ? 'QueryProcedure' : 'MutationProcedure'
@@ -290,10 +290,10 @@ const getTypeDefinition = async (schema: OpenAPIObject) => {
         inputType = 'void'
       }
 
-      pathTypeDefinition += `${' '.repeat(separatedPath.length * 2)}${method}: ${procedure}<${inputType}, ${outputType}>`
+      pathTypeDefinition += `${method}: ${procedure}<${inputType}, ${outputType}>`
 
       separatedPath.forEach((_innerPath, index) => {
-        pathTypeDefinition += `${' '.repeat(index * 2)}}${index === separatedPath.length - 1 ? '>' : '>,'}\n`
+        pathTypeDefinition += `}${index === separatedPath.length - 1 ? '>' : '>,'}\n`
       })
 
       typeDefinition += `${pathTypeDefinition}`
