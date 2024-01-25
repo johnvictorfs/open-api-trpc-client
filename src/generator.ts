@@ -160,11 +160,24 @@ const generate = async () => {
     throw new Error('No paths found in OpenAPI schema')
   }
 
-  const paths = Object.entries(schema.paths)
+  const paths = Object.entries(schema.paths).sort(([a], [b]) => {
+    const aParts = a.split('/').filter((p) => p !== '')
+    const bParts = b.split('/').filter((p) => p !== '')
+
+    if (aParts.length === bParts.length) {
+      return 0
+    }
+
+    if (aParts.length > bParts.length) {
+      return 1
+    }
+
+    return -1
+  })
 
   let typeDefinition = `export type ApiRouter = CreateRouterInner<FakeConfig, {\n`
 
-  paths.forEach(([path, methods]) => {
+  paths.forEach(([path, methods], pathIndex) => {
     // Example: ['users', 'search', '{user_type}', 'submit']
     (['get', 'post', 'put', 'patch', 'delete', 'head', 'options'] as const).forEach((method) => {
       if (!methods[method]) return
@@ -176,12 +189,21 @@ const generate = async () => {
         const isUrlParameter = innerPath.startsWith('{') && innerPath.endsWith('}')
         const attributeName = isUrlParameter ? `[${innerPath.slice(1, -1)}: string]` : innerPath
 
-        pathTypeDefinition += `${' '.repeat((index + 1) * 2)}${attributeName}: CreateRouterInner<FakeConfig, {\n`
+        let pathIdentifier = `${attributeName}: `
+
+        if (pathIndex !== 0) {
+          const previousPath = paths[pathIndex - 1][0].split('/')[1]
+          if (previousPath === innerPath) {
+            // If this is from the same root path, just add to it
+            pathIdentifier = ' & '
+          }
+        }
+
+        pathTypeDefinition += `${' '.repeat((index + 1) * 2)}${pathIdentifier} CreateRouterInner<FakeConfig, {\n`
       })
 
       const procedure = method === 'get' || method === 'head' || method === 'options' ? 'QueryProcedure' : 'MutationProcedure'
 
-      let bodyParams = ``
       let queryParams = ``
 
       methods[method]?.parameters?.forEach((parameter) => {
@@ -191,8 +213,8 @@ const generate = async () => {
               queryParams = `{`
             }
 
-            queryParams += `${parameter.name}${parameter.required ? '' : '?'}: ${getTypeOfObjectSchema(parameter.schema ?? {}, schema)},\n`
-            // queryParams += `${parameter.name}?: ${parameter.schema ?? 'unknown'}\n`
+            const paramType = getTypeOfObjectSchema(parameter.schema ?? {}, schema)
+            queryParams += `${parameter.name}${parameter.required ? '' : '?'}: ${paramType},\n`
           }
         }
       })
@@ -200,6 +222,8 @@ const generate = async () => {
       if (queryParams) {
         queryParams += `}`
       }
+
+      let bodyParams = ``
 
       const requestBody = methods[method]?.requestBody
       if (requestBody && 'content' in requestBody && 'application/json' in requestBody.content) {
@@ -210,7 +234,7 @@ const generate = async () => {
         }
       }
 
-      let outputType = `` // TODO: get output type
+      let outputType = ''
 
       const responses = methods[method]?.responses
       if (responses) {
@@ -252,8 +276,6 @@ const generate = async () => {
       if (!inputType) {
         inputType = 'void'
       }
-
-      // ProcedureInputs<${bodyParams}, ${queryParams}>
 
       pathTypeDefinition += `${' '.repeat(separatedPath.length * 2)}${method}: ${procedure}<${inputType}, ${outputType}>`
 

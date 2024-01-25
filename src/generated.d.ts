@@ -66,26 +66,40 @@ type DecoratedProcedureRecord<TProcedures extends ProcedureRouterRecord> = {
 
 export type ApiRouter = CreateRouterInner<FakeConfig, {
   users: CreateRouterInner<FakeConfig, {
+    post: MutationProcedure<{
+      data: { id: number, username: string, email: string, level: number, profile?: { name: string, age: number } },
+    }, { id: number, username: string, email: string, level: number, profile?: { name: string, age: number } }>
+  }>
+  & CreateRouterInner<FakeConfig, {
     [user_id: string]: CreateRouterInner<FakeConfig, {
       get: QueryProcedure<void, null | { id: number, username: string, email: string, level: number, profile?: { name: string, age: number } }>
     }>,
   }>
-  users: CreateRouterInner<FakeConfig, {
+  & CreateRouterInner<FakeConfig, {
     profile: CreateRouterInner<FakeConfig, {
       [user_id: string]: CreateRouterInner<FakeConfig, {
         get: QueryProcedure<void, null | { name: string, age: number }>
       }>,
     }>,
   }>
-  users: CreateRouterInner<FakeConfig, {
-    post: MutationProcedure<{
-      data: { id: number, username: string, email: string, level: number, profile?: { name: string, age: number } },
-    }, { id: number, username: string, email: string, level: number, profile?: { name: string, age: number } }>
-  }>
-  users: CreateRouterInner<FakeConfig, {
+  & CreateRouterInner<FakeConfig, {
     search: CreateRouterInner<FakeConfig, {
       [user_type: string]: CreateRouterInner<FakeConfig, {
         submit: CreateRouterInner<FakeConfig, {
+          post: MutationProcedure<{
+            data: { name: string, age: number }, query: {
+              sort_by?: 'name' | 'email' | null,
+              order?: null | string,
+            },
+          }, { id: number, username: string, email: string, level: number, profile?: { name: string, age: number } }>
+        }>,
+      }>,
+    }>,
+  }>
+  & CreateRouterInner<FakeConfig, {
+    search: CreateRouterInner<FakeConfig, {
+      [user_type: string]: CreateRouterInner<FakeConfig, {
+        do_thing: CreateRouterInner<FakeConfig, {
           post: MutationProcedure<{
             data: { name: string, age: number }, query: {
               sort_by?: 'name' | 'email' | null,

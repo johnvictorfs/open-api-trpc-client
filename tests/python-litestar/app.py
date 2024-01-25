@@ -74,4 +74,26 @@ async def search_users(
     return users[0]
 
 
-app = Litestar(route_handlers=[get_user, get_user_profile, create_user, search_users])
+@post("/users/search/{user_type: str}/do_thing")
+async def do_search_thing(
+    data: SearchBody,
+    user_type: str,
+    sort_by: Literal["name", "email"] | None,
+    order: str | None,
+) -> User:
+    print(data)
+    print(user_type)
+    print(sort_by)
+    print(order)
+    return users[0]
+
+
+app = Litestar(
+    route_handlers=[
+        get_user,
+        get_user_profile,
+        create_user,
+        search_users,
+        do_search_thing,
+    ]
+)
