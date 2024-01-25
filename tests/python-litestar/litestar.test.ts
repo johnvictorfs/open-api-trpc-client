@@ -1,7 +1,7 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import { assert, beforeAll, afterAll, test } from 'vitest'
 
-import type { ApiRouter } from "./generated/api-client";
+import type { ApiRouter, User } from "./generated/api-client";
 import { createOpenApiClient } from "src/client";
 
 type LiteStarError = {
@@ -80,4 +80,18 @@ test('can pass query params', async () => {
   })
 
   assert(data?.username === 'foo')
+})
+
+test('can use types from generated typings', async () => {
+  const _correctUser: User = {
+    email: 'test@email.com',
+    id: 2,
+    level: 123,
+    username: 'test'
+  }
+
+  const _wrongUser: User = {
+    // @ts-expect-error
+    id: 'asd'
+  }
 })
