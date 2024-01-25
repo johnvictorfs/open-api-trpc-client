@@ -12,6 +12,7 @@ const executeLiteStarApi = async (): Promise<ChildProcessWithoutNullStreams> => 
   // Wait for API to start
   return await new Promise((resolve) => {
     process.stderr.on('data', (data) => {
+      console.log(data.toString())
       if (data.toString().includes('Uvicorn running')) {
         resolve(process)
       }
