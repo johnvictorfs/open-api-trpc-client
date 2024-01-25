@@ -37,7 +37,7 @@ jobs:
           path: tests/python-litestar/.venv
           key: poetry-${{ hashFiles('**/poetry.lock') }}
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         working-directory: tests/python-litestar
         run: |
           poetry --version
