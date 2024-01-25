@@ -7,7 +7,7 @@
     "test:watch": "vite-node -w tests/**/*.test.ts",
     "generate:watch": "vite-node -w src/cli.ts types --watch --",
     "generate": "vite-node src/cli.ts types --",
-    "generate:starlite": "cd tests/python-litestar && mkdir -p ./generated && poetry run litestar schema openapi --output ./generated/starlite-openapi.json && yarn generate --schema ./tests/python-litestar/generated/starlite-openapi.json --destination ./tests/python-litestar/generated/api-client.d.ts"
+    "generate:litestar": "cd tests/python-litestar && mkdir -p ./generated && poetry run litestar schema openapi --output ./generated/litestar-openapi.json && yarn generate --schema ./tests/python-litestar/generated/litestar-openapi.json --destination ./tests/python-litestar/generated/api-client.d.ts"
   },
   "devDependencies": {
     "@types/node": "^20.10.7",

@@ -7,7 +7,7 @@ on:
     branches: [master]
 
 jobs:
- starlite:
+ litestar:
     runs-on: ubuntu-22.04
     strategy:
       max-parallel: 4
@@ -61,7 +61,7 @@ jobs:
           cmd: install
 
       - name: Generate API Schema
-        run: yarn generate:starlite
+        run: yarn generate:litestar
 
       - name: Type-check
         run: yarn type-check
