@@ -313,7 +313,7 @@ const getTypeDefinition = async (schema: OpenAPIObject) => {
 
   typeDefinition += `}>`
 
-  return prettier.format(`${FILE_HEADER}\n${referenceDefinitionsTypes}\n${typeDefinition}\n`, {
+  return prettier.format(`${FILE_HEADER}\n${referenceDefinitionsTypes}\n\n${typeDefinition}\n`, {
     parser: 'typescript'
   })
 }
