@@ -49,11 +49,9 @@ export const createOpenApiClient = <TRouter extends AnyRouter, TError = unknown>
 
     const [input] = opts.args as [{ data: any, query: any }]
 
-    let stringQueryParams = ''
     if (input?.query) {
       const queryParams = new URLSearchParams(input?.query)
-      stringQueryParams = `?${queryParams.toString()}`
-      uri += stringQueryParams
+      uri += `?${queryParams.toString()}`
     }
 
     const stringifiedInput = input !== undefined && !!input?.data && JSON.stringify(input.data);
