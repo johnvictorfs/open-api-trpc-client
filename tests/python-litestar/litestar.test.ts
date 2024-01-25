@@ -65,5 +65,5 @@ test('can pass query params', async () => {
     }
   })
 
-  assert(response.username === 'foo')
+  assert(response?.username === 'foo')
 })

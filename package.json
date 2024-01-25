@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@trpc/server": "^10.45.0",
+    "prettier": "^3.2.4",
     "vite-node": "^1.2.1",
     "yargs": "^17.7.2",
     "zod": "^3.22.4"

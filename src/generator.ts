@@ -1,6 +1,7 @@
 // TODO: Rewrite in Rust
 import type { MediaTypeObject, OpenAPIObject, ReferenceObject, SchemaObject } from "openapi3-ts/oas31"
 import { promises as fs } from 'fs'
+import prettier from 'prettier'
 
 export type GeneratorConfig = {
   /**
@@ -302,8 +303,9 @@ const getTypeDefinition = async (schema: OpenAPIObject) => {
 
   typeDefinition += `}>`
 
-  return `${FILE_HEADER}
-${typeDefinition}\n`
+  return prettier.format(`${FILE_HEADER}\n${typeDefinition}\n`, {
+    parser: 'typescript'
+  })
 }
 
 let lastSchema: OpenAPIObject | null = null
