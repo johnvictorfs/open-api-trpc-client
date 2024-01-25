@@ -66,12 +66,16 @@ async def search_users(
     user_type: str,
     sort_by: Literal["name", "email"] | None,
     order: str | None,
-) -> User:
-    print(data)
-    print(user_type)
+) -> User | None:
     print(sort_by)
-    print(order)
-    return users[0]
+    assert user_type == "admin"
+    assert sort_by is not None
+
+    for user in users:
+        if user["username"] == data["name"]:
+            return user
+
+    return None
 
 
 @post("/users/search/{user_type: str}/do_thing")
