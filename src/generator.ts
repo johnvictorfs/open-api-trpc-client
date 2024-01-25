@@ -1,3 +1,4 @@
+// TODO: Rewrite in Rust
 import type { MediaTypeObject, OpenAPIObject, ReferenceObject, SchemaObject } from "openapi3-ts/oas31"
 import { promises as fs } from 'fs'
 
