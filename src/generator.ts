@@ -47,7 +47,6 @@ import type {
   unsetMarker,
   BuildProcedure,
 } from "@trpc/server";
-import { type TRPCResponse } from '@trpc/server/rpc';
 
 type ProcedureParams<TInput> = {
   _config: RootConfig<{
@@ -68,7 +67,7 @@ type QueryProcedure<TInput, TOutput> = BuildProcedure<'query', ProcedureParams<T
 
 type MutationProcedure<TInput, TOutput> = BuildProcedure<'mutation', ProcedureParams<TInput>, TOutput>
 
-export type FakeConfig = RootConfig<{
+type FakeConfig = RootConfig<{
   ctx: object;
   meta: object;
   errorShape: DefaultErrorShape;
