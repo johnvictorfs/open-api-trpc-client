@@ -2,15 +2,16 @@
   "name": "open-api-trpc-client",
   "packageManager": "yarn@3.6.2",
   "scripts": {
-    "test": "tsx tests/**/*.test.ts",
-    "generate": "vite-node -w src/cli.ts types --",
-    "generate:starlite": "yarn generate --schema http://127.0.0.1:8000/schema/openapi.json --destination ./generated/generated.d.ts"
+    "test": "vite-node tests/**/*.test.ts",
+    "test:watch": "vite-node -w tests/**/*.test.ts",
+    "generate:watch": "vite-node -w src/cli.ts types --watch --",
+    "generate": "vite-node src/cli.ts types --",
+    "generate:starlite": "mkdir -p ./generated && cd tests/python-litestar && poetry run litestar schema openapi --output ../../generated/starlite-openapi.json && cd ../.. && yarn generate --schema ./generated/starlite-openapi.json --destination ./generated/api-client.d.ts"
   },
   "devDependencies": {
     "@types/node": "^20.10.7",
     "@types/yargs": "^17.0.32",
     "openapi3-ts": "^4.2.1",
-    "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   },
   "dependencies": {

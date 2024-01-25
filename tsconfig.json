@@ -17,6 +17,6 @@
     ],
     "baseUrl": "."
   },
-  "include": ["src", "tests/**/*"],
+  "include": ["src", "tests/**/*", "generated/*.d.ts"],
   "exclude": ["node_modules", "dist"]
 }

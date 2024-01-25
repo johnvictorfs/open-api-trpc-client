@@ -1,0 +1,58 @@
+name: Run Tests 
+
+on:
+  pull_request:
+    branches: [master]
+
+jobs:
+ starlite:
+    runs-on: ubuntu-22.04
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.11]
+        poetry-version: [1.7.1]
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Setup Poetry
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: ${{ matrix.poetry-version }}
+
+      - name: Poetry Config
+        run: poetry config virtualenvs.in-project true
+
+      - uses: actions/cache@v2
+        with:
+          path: tests/python-litestar/.venv
+          key: poetry-${{ hashFiles('**/poetry.lock') }}
+
+      - name: Install dependencies
+        working-directory: tests/python-litestar
+        run: |
+          poetry --version
+          poetry install
+
+      - name: Set Node.js 20.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20.x
+
+      - name: Install yarn dependencies
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+
+      - name: Generate API Schema
+        run: yarn generate:starlite
+
+      - name: Run tests
+        run: yarn test

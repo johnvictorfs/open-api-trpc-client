@@ -21,6 +21,11 @@ yargs(hideBin(process.argv))
         type: 'number',
         default: 30
       })
+      .option('watch', {
+        describe: 'Watch the schema file for changes and update the type definitions',
+        type: 'boolean',
+        default: false
+      })
   }, (argv) => {
     const updateTypeDefs = () => {
       const text = `[${new Date().toISOString()}] Generated types`
@@ -34,12 +39,17 @@ yargs(hideBin(process.argv))
         console.timeEnd(text)
     }
 
+    updateTypeDefs()
+
+    if (!argv.watch) {
+      return
+    }
+
     if (argv.schema.startsWith('http')) {
       // update periodically
       setInterval(updateTypeDefs, argv.period * 1000)
     } else {
       // Update when schema file changes
-      updateTypeDefs()
       fs.watch(argv.schema, updateTypeDefs)
     }
   })
