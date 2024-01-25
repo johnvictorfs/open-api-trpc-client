@@ -1,8 +1,27 @@
-import { MediaTypeObject, OpenAPIObject, ReferenceObject, SchemaObject } from "openapi3-ts/oas31"
+import type { MediaTypeObject, OpenAPIObject, ReferenceObject, SchemaObject } from "openapi3-ts/oas31"
+import { promises as fs } from 'fs'
+
+export type GeneratorConfig = {
+  /**
+   * The path to the OpenAPI schema, can be a local file or a URL
+   */
+  path: string
+  /**
+   * The destination of the generated file with type definitions
+   */
+  destination: string
+}
 
 const getDocs = async (path: string) => {
-  const response = await fetch(path)
-  const schema = await response.json() as OpenAPIObject
+  let schema: OpenAPIObject | null = null
+
+  if (path.startsWith('http')) {
+    const response = await fetch(path)
+    schema = await response.json() as OpenAPIObject
+  } else {
+    const fileContents = await fs.readFile(path, 'utf-8')
+    schema = JSON.parse(fileContents) as OpenAPIObject
+  }
 
   if (!schema?.openapi) {
     throw new Error('Invalid OpenAPI Schema')
@@ -15,11 +34,6 @@ const getDocs = async (path: string) => {
   }
 
   return schema
-}
-
-const config = {
-  path: 'http://127.0.0.1:8000/schema/openapi.json',
-  destination: 'src/generated.d.ts',
 }
 
 const FILE_HEADER = `// This file is auto-generated and will be overwritten. Do not manually make changes
@@ -153,9 +167,7 @@ const getTypeOfObjectSchema = (
   return 'unknown'
 }
 
-const generate = async () => {
-  const schema = await getDocs(config.path)
-
+const getTypeDefinition = async (schema: OpenAPIObject) => {
   if (!schema.paths) {
     throw new Error('No paths found in OpenAPI schema')
   }
@@ -293,12 +305,20 @@ const generate = async () => {
 ${typeDefinition}\n`
 }
 
-import { promises as fs } from 'fs'
+let lastSchema: OpenAPIObject | null = null
 
-const main = async () => {
-  const typeDefinition = await generate()
+export const generateTypes = async (config: GeneratorConfig) => {
+  const schema = await getDocs(config.path)
+
+  if (JSON.stringify(schema) === JSON.stringify(lastSchema)) {
+    return
+  }
+
+  if (lastSchema === null) {
+    lastSchema = schema
+  }
+
+  const typeDefinition = await getTypeDefinition(schema)
 
   await fs.writeFile(config.destination, typeDefinition)
 }
-
-main()

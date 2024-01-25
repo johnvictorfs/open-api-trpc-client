@@ -2,16 +2,21 @@
   "name": "open-api-trpc-client",
   "packageManager": "yarn@3.6.2",
   "scripts": {
-    "test": "tsx tests/**/*.test.ts"
+    "test": "tsx tests/**/*.test.ts",
+    "generate": "vite-node -w src/cli.ts types --",
+    "generate:starlite": "yarn generate --schema http://127.0.0.1:8000/schema/openapi.json --destination ./generated/generated.d.ts"
   },
   "devDependencies": {
     "@types/node": "^20.10.7",
+    "@types/yargs": "^17.0.32",
     "openapi3-ts": "^4.2.1",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   },
   "dependencies": {
     "@trpc/server": "^10.45.0",
+    "vite-node": "^1.2.1",
+    "yargs": "^17.7.2",
     "zod": "^3.22.4"
   }
 }
