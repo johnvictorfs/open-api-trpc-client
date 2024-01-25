@@ -49,15 +49,12 @@ export const createOpenApiClient = <TRouter extends AnyRouter, TError = unknown>
 
     const [input] = opts.args as [{ data: any, query: any }]
 
-    const queryParameters: { key: string, value: any }[] = input?.query ? Object.entries(input.query).map(([key, value]) => ({ key, value })) : []
-
-    queryParameters.forEach((queryParameter, index) => {
-      if (index === 0) {
-        uri += `?${queryParameter.key}=${queryParameter.value}`
-      } else {
-        uri += `&${queryParameter.key}=${queryParameter.value}`
-      }
-    })
+    let stringQueryParams = ''
+    if (input?.query) {
+      const queryParams = new URLSearchParams(input?.query)
+      stringQueryParams = `?${queryParams.toString()}`
+      uri += stringQueryParams
+    }
 
     const stringifiedInput = input !== undefined && !!input?.data && JSON.stringify(input.data);
     let body = restMethod === 'get' ? undefined : (stringifiedInput || undefined);
