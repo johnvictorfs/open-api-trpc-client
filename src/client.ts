@@ -1,6 +1,6 @@
 import { createRecursiveProxy } from '@trpc/server/shared';
 import type { TRPCResponse } from '@trpc/server/rpc';
-import type { AnyMutationProcedure, AnyProcedure, AnyQueryProcedure, AnyRouter, ProcedureRouterRecord, inferProcedureInput, inferProcedureOutput } from '@trpc/server';
+import type { AnyMutationProcedure, AnyProcedure, AnyQueryProcedure, AnyRouter, inferProcedureInput, inferProcedureOutput } from '@trpc/server';
 
 type ProcedureOutput<TProcedure, TError = unknown> = {
   response: Response
@@ -11,6 +11,14 @@ type ProcedureOutput<TProcedure, TError = unknown> = {
   data: null
   error: TError
 })
+
+type ProcedureOrRouter = AnyProcedure | AnyRouter
+
+type AnyUrlParameter = ((...args: any) => ProcedureOrRouter)
+
+interface ProcedureRouterRecord {
+  [key: string]: ProcedureOrRouter;
+}
 
 type Resolver<TProcedure extends AnyProcedure, TError = unknown> = (
   input: inferProcedureInput<TProcedure>
@@ -27,12 +35,16 @@ type DecorateProcedure<TProcedure extends AnyProcedure, TError = unknown> =
   }
   : never;
 
-type DecoratedProcedureRecord<TProcedures extends ProcedureRouterRecord, TError = unknown> = {
+type DecoratedProcedureRecord<TProcedures extends ProcedureRouterRecord | AnyUrlParameter | ProcedureOrRouter, TError = unknown> = {
   [TKey in keyof TProcedures]: TProcedures[TKey] extends AnyRouter
-  ? DecoratedProcedureRecord<TProcedures[TKey]['_def']['record'], TError>
+  ? DecoratedProcedureRecord<TProcedures[TKey]['_def']['record'], TError> // Router
   : TProcedures[TKey] extends AnyProcedure
-  ? DecorateProcedure<TProcedures[TKey], TError>
-  : never;
+  ? DecorateProcedure<TProcedures[TKey], TError> // Procedure
+  : TProcedures[TKey] extends AnyUrlParameter
+  ? (...args: Parameters<TProcedures[TKey]>) => DecoratedProcedureRecord<ReturnType<TProcedures[TKey]>, TError> // URL Parameter
+  : TProcedures[TKey] extends ProcedureOrRouter
+  ? DecoratedProcedureRecord<TProcedures[TKey], TError> // URL Parameter Return
+  : never
 };
 
 export const createOpenApiClient = <TRouter extends AnyRouter, TError = unknown>(
@@ -40,6 +52,7 @@ export const createOpenApiClient = <TRouter extends AnyRouter, TError = unknown>
 ) =>
   // https://trpc.io/blog/tinyrpc-client
   createRecursiveProxy(async (opts) => {
+    debugger
     const path = [...opts.path]; // e.g. ["post", "byId", "get", "query"]
 
     const trpcMethod = path.pop()! as 'query';

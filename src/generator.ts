@@ -181,9 +181,8 @@ const getTypeDefinition = async (schema: OpenAPIObject) => {
 
       separatedPath.forEach((innerPath, index) => {
         const isUrlParameter = innerPath.startsWith('{') && innerPath.endsWith('}')
-        const attributeName = isUrlParameter ? `[${innerPath.slice(1, -1)}: string]` : innerPath
-
-        let pathIdentifier = `${attributeName}: `
+        const attributeName = isUrlParameter ? innerPath.slice(1, -1) : innerPath
+        let pathIdentifier = isUrlParameter ? `${attributeName}: (${attributeName}: string) =>` : `${attributeName}: `
 
         if (pathIndex !== 0) {
           const previousPath = paths[pathIndex - 1][0].split('/')[1]

@@ -49,7 +49,7 @@ afterAll(() => {
 test('can call API with generated client', async () => {
   const litestarClient = createOpenApiClient<ApiRouter>('http://127.0.0.1:8000')
   const userId = '99'
-  const { data } = await litestarClient.users.profile[userId].get.query()
+  const { data } = await litestarClient.users.profile.user_id('asd').get.query()
   assert(data?.age === 22)
 })
 
@@ -70,7 +70,7 @@ test('type errors where expected', async () => {
 test('can pass query params', async () => {
   const litestarClient = createOpenApiClient<ApiRouter>('http://127.0.0.1:8000')
   const userType = 'admin'
-  const { data } = await litestarClient.users.search[userType].submit.post.mutate({
+  const { data } = await litestarClient.users.search.user_type('asd').do_thing.post.mutate({
     data: {
       name: 'foo',
       age: 12
