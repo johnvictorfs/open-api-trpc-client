@@ -93,6 +93,10 @@ const getTypeOfObjectSchema = (
   schemaObject: SchemaObject | ReferenceObject | MediaTypeObject,
   apiSchema: OpenAPIObject,
 ): string => {
+  if ('schema' in schemaObject && schemaObject.schema) {
+    return getTypeOfObjectSchema(schemaObject.schema, apiSchema)
+  }
+
   if ('type' in schemaObject) {
     if ('enum' in schemaObject && schemaObject.enum) {
       return schemaObject.enum.map((v) => {
@@ -134,26 +138,19 @@ const getTypeOfObjectSchema = (
     return schemaObject.oneOf.map((v) => getTypeOfObjectSchema(v, apiSchema)).join(' | ')
   }
 
-  if ('schema' in schemaObject) {
-    if (schemaObject.schema && '$ref' in schemaObject.schema) {
-      const reference = schemaObject.schema.$ref
+  if ('$ref' in schemaObject) {
+    const reference = schemaObject.$ref
 
-      if (reference.startsWith('#/components/schemas/')) {
-        const referenceName = reference.slice('#/components/schemas/'.length)
+    if (reference.startsWith('#/components/schemas/')) {
+      const referenceName = reference.slice('#/components/schemas/'.length)
 
-        if (apiSchema.components?.schemas && referenceName in apiSchema.components?.schemas) {
-          return getTypeOfObjectSchema(apiSchema.components?.schemas[referenceName], apiSchema)
-        }
+      if (apiSchema.components?.schemas && referenceName in apiSchema.components?.schemas) {
+        return getTypeOfObjectSchema(apiSchema.components?.schemas[referenceName], apiSchema)
       }
     }
   }
-  // "schema": {
-  //   "$ref": "#/components/schemas/User"
-  // }
-  console.log('schema', schemaObject)
-  // if ('$ref' in schema.schema)
 
-  return 'any'
+  return 'unknown'
 }
 
 const generate = async () => {
@@ -213,7 +210,30 @@ const generate = async () => {
         }
       }
 
-      const outputType = `any` // TODO: get output type
+      let outputType = `` // TODO: get output type
+
+      const responses = methods[method]?.responses
+      if (responses) {
+        Object.entries(responses).forEach(([statusCode, response]) => {
+          if (statusCode.startsWith('2')) {
+            if ('content' in response && 'application/json' in response.content) {
+              const objectSchema = response.content['application/json']
+
+              if (objectSchema) {
+                if (outputType) {
+                  outputType += ' | '
+                }
+
+                outputType += getTypeOfObjectSchema(objectSchema, schema)
+              }
+            }
+          }
+        })
+      }
+
+      if (!outputType) {
+        outputType = 'unknown'
+      }
 
       let inputType = ``
 

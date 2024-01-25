@@ -155,15 +155,7 @@ const testStuff = async () => {
   //   }
   // })
   const litestarClient2 = createOpenApiClient<ApiRouter>('http://127.0.0.1:8000');
-  litestarClient2.users.search.admin.submit.post.mutate({
-    data: {
-      name: 'asd',
-      age: 123
-    },
-    query: {
-      order: 'asd',
-    }
-  })
+  // litestarClient2.users['asd'].get.query().then((d) => d.)
   /**
    * POST /users/search/admin/submit?sort_by=id&order=asc HTTP/1.1
    * 

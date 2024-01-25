@@ -66,6 +66,23 @@ type DecoratedProcedureRecord<TProcedures extends ProcedureRouterRecord> = {
 
 export type ApiRouter = CreateRouterInner<FakeConfig, {
   users: CreateRouterInner<FakeConfig, {
+    [user_id: string]: CreateRouterInner<FakeConfig, {
+      get: QueryProcedure<void, null | { id: number, username: string, email: string, level: number, profile?: { name: string, age: number } }>
+    }>,
+  }>
+  users: CreateRouterInner<FakeConfig, {
+    profile: CreateRouterInner<FakeConfig, {
+      [user_id: string]: CreateRouterInner<FakeConfig, {
+        get: QueryProcedure<void, null | { name: string, age: number }>
+      }>,
+    }>,
+  }>
+  users: CreateRouterInner<FakeConfig, {
+    post: MutationProcedure<{
+      data: { id: number, username: string, email: string, level: number, profile?: { name: string, age: number } },
+    }, { id: number, username: string, email: string, level: number, profile?: { name: string, age: number } }>
+  }>
+  users: CreateRouterInner<FakeConfig, {
     search: CreateRouterInner<FakeConfig, {
       [user_type: string]: CreateRouterInner<FakeConfig, {
         submit: CreateRouterInner<FakeConfig, {
@@ -74,7 +91,7 @@ export type ApiRouter = CreateRouterInner<FakeConfig, {
               sort_by?: 'name' | 'email' | null,
               order?: null | string,
             },
-          }, any>
+          }, { id: number, username: string, email: string, level: number, profile?: { name: string, age: number } }>
         }>,
       }>,
     }>,
