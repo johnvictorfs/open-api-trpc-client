@@ -1,6 +1,5 @@
-import assert from 'assert';
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
-import { before, after, test } from 'node:test'
+import { assert, beforeAll, afterAll, test } from 'vitest'
 
 import type { ApiRouter } from "./generated/api-client";
 import { createOpenApiClient } from "src/client";
@@ -22,11 +21,11 @@ const executeLiteStarApi = async (): Promise<ChildProcessWithoutNullStreams> => 
 
 let apiProcess: ChildProcessWithoutNullStreams
 
-before(async () => {
+beforeAll(async () => {
   apiProcess = await executeLiteStarApi()
 })
 
-after(() => {
+afterAll(() => {
   if (apiProcess) {
     apiProcess.kill()
   }
