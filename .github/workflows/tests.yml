@@ -41,7 +41,7 @@ jobs:
         working-directory: tests/python-litestar
         run: |
           poetry --version
-          poetry install
+          poetry install --no-root
 
       - name: Set Node.js 20.x
         uses: actions/setup-node@v3
