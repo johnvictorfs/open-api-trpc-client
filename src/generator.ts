@@ -40,20 +40,13 @@ const getDocs = async (path: string) => {
 
 const FILE_HEADER = `// This file is auto-generated and will be overwritten. Do not manually make changes
 import type {
-  AnyQueryProcedure,
-  AnyMutationProcedure,
-  AnyProcedure,
-  inferProcedureInput,
-  inferProcedureOutput,
   DefaultErrorShape,
   DefaultDataTransformer,
   RootConfig,
   CreateRouterInner,
-  BuildProcedure,
   unsetMarker,
-  ProcedureRouterRecord,
-  AnyRouter,
-} from '@trpc/server';
+  BuildProcedure,
+} from "@trpc/server";
 import { type TRPCResponse } from '@trpc/server/rpc';
 
 type ProcedureParams<TInput> = {
@@ -72,6 +65,7 @@ type ProcedureParams<TInput> = {
 }
 
 type QueryProcedure<TInput, TOutput> = BuildProcedure<'query', ProcedureParams<TInput>, TOutput>
+
 type MutationProcedure<TInput, TOutput> = BuildProcedure<'mutation', ProcedureParams<TInput>, TOutput>
 
 export type FakeConfig = RootConfig<{
@@ -80,29 +74,6 @@ export type FakeConfig = RootConfig<{
   errorShape: DefaultErrorShape;
   transformer: DefaultDataTransformer;
 }>
-
-type Resolver<TProcedure extends AnyProcedure> = (
-  input: inferProcedureInput<TProcedure>
-) => Promise<inferProcedureOutput<TProcedure>>;
-
-export type DecorateProcedure<TProcedure extends AnyProcedure> =
-  TProcedure extends AnyQueryProcedure
-  ? {
-    query: Resolver<TProcedure>;
-  }
-  : TProcedure extends AnyMutationProcedure
-  ? {
-    mutate: Resolver<TProcedure>;
-  }
-  : never;
-
-type DecoratedProcedureRecord<TProcedures extends ProcedureRouterRecord> = {
-  [TKey in keyof TProcedures]: TProcedures[TKey] extends AnyRouter
-  ? DecoratedProcedureRecord<TProcedures[TKey]['_def']['record']>
-  : TProcedures[TKey] extends AnyProcedure
-  ? DecorateProcedure<TProcedures[TKey]>
-  : never;
-};
 `
 
 const getTypeOfObjectSchema = (
