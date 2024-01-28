@@ -14,13 +14,12 @@
     "@types/yargs": "^17.0.32",
     "openapi3-ts": "^4.2.1",
     "typescript": "^5.3.3",
+    "vite-node": "^1.2.1",
     "vitest": "^1.2.1"
   },
   "dependencies": {
     "@trpc/server": "^10.45.0",
     "prettier": "^3.2.4",
-    "vite-node": "^1.2.1",
-    "yargs": "^17.7.2",
-    "zod": "^3.22.4"
+    "yargs": "^17.7.2"
   }
 }
